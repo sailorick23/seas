@@ -5,25 +5,60 @@ export default {
   component: () => null,
 }
 
+const SAMPLE_COUNT = 128
+
 export const Basic = () => {
-  const periodicWaveform = { magnitudeX: 1, magnitudeY: 1, phase: 0 }
+  const compositeWaveform = [
+    { magnitudeX: 1, magnitudeY: 0.5, phase: 1 / 3 },
+    { magnitudeX: 0.5, magnitudeY: 0.25, phase: 1 / 3 / 2 },
+    { magnitudeX: 0.25, magnitudeY: 0.125, phase: 1 / 3 / 2 / 3 },
+  ]
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   useEffect(() => {
     const graphicsContext = canvasRef.current?.getContext('2d')
     if (graphicsContext) {
-      const unitWaveformEllipse = ellipse({
-        center: { x: 0, y: 0 },
-        radiusX: periodicWaveform.magnitudeX,
-        radiusY: periodicWaveform.magnitudeY,
-        rotation: periodicWaveform.phase,
-      })
-      const unitWaveformSamples = ellipsePerimeterSamples({
-        someEllipse: unitWaveformEllipse,
-        sampleCount: 96,
-      })
+      const {
+        baseHarmonicsGeometry,
+        baseMaxCompositeRadius,
+      } = compositeWaveform.reduce(
+        (baseGeometryResult, harmonicWaveform, harmonicIndex) => {
+          const previousGeometry =
+            baseGeometryResult.baseHarmonicsGeometry[harmonicIndex - 1]
+          const baseCenter = previousGeometry
+            ? previousGeometry.sampler(-previousGeometry.ellipse.rotation)
+            : point({ x: 0, y: 0 })
+          const baseEllipse = ellipse({
+            center: baseCenter,
+            radiusX: harmonicWaveform.magnitudeX,
+            radiusY: harmonicWaveform.magnitudeY,
+            rotation: harmonicWaveform.phase,
+          })
+          const baseSampler = (angleIndex: number) =>
+            ellipsePerimeterPoint({
+              angleIndex,
+              someEllipse: baseEllipse,
+            })
+          const baseMaxCompositeRadius =
+            baseGeometryResult.baseMaxCompositeRadius +
+            Math.max(baseEllipse.radiusX, baseEllipse.radiusY)
+          baseGeometryResult.baseHarmonicsGeometry.push({
+            ellipse: baseEllipse,
+            sampler: baseSampler,
+          })
+          baseGeometryResult.baseMaxCompositeRadius = baseMaxCompositeRadius
+          return baseGeometryResult
+        },
+        {
+          baseHarmonicsGeometry: [],
+          baseMaxCompositeRadius: 0,
+        } as {
+          baseHarmonicsGeometry: HarmonicGeometry[]
+          baseMaxCompositeRadius: number
+        }
+      )
       const targetCanvas = graphicsContext.canvas
       const canvasRectangle = rectangle({
-        anchor: { x: 0, y: 0 },
+        anchor: point({ x: 0, y: 0 }),
         width: targetCanvas.width,
         height: targetCanvas.height,
       })
@@ -31,30 +66,59 @@ export const Basic = () => {
       const targetPadding = canvasRoot / 8
       const targetRoot = canvasRoot - 2 * targetPadding
       const targetRectangle = rectangle({
-        anchor: { x: targetPadding, y: targetPadding },
+        anchor: point({ x: targetPadding, y: targetPadding }),
         width: targetRoot,
         height: targetRoot,
       })
       const targetCenter = rectangleCenter(targetRectangle)
       const maxTargetRadius = targetRoot / 2
-      const projectedSample = (unitEllipseSample: Point) => ({
-        x: maxTargetRadius * unitEllipseSample.x + targetCenter.x,
-        y: maxTargetRadius * unitEllipseSample.y + targetCenter.y,
-      })
-      const projectedWaveformSamples = unitWaveformSamples.map(projectedSample)
-      strokePathPoints({
-        graphicsContext,
-        pathPoints: projectedWaveformSamples,
+      const sampleIndexStep = 1 / SAMPLE_COUNT
+      const projectedHarmonicsPaths = Array(SAMPLE_COUNT)
+        .fill(undefined)
+        .reduce<Point[][]>(
+          (harmonicsPathsResult, _, sampleIndex) => {
+            const sampleAngleIndex = sampleIndex * sampleIndexStep
+            harmonicsPathsResult.forEach(
+              (projectedHarmonicPath, harmonicIndex) => {
+                const baseGeometry = baseHarmonicsGeometry[harmonicIndex]
+                const baseSample = baseGeometry.sampler(sampleAngleIndex)
+                const projectedSample = point({
+                  x:
+                    (maxTargetRadius * baseSample.x) / baseMaxCompositeRadius +
+                    targetCenter.x,
+                  y:
+                    (maxTargetRadius * baseSample.y) / baseMaxCompositeRadius +
+                    targetCenter.y,
+                })
+                projectedHarmonicPath.push(projectedSample)
+              }
+            )
+            return harmonicsPathsResult
+          },
+          baseHarmonicsGeometry.map(() => [])
+        )
+      projectedHarmonicsPaths.forEach((harmonicPath) => {
+        strokePathPoints({
+          graphicsContext,
+          pathPoints: harmonicPath,
+        })
       })
     }
   }, [])
   return <canvas ref={canvasRef} width={256} height={256} />
 }
 
+interface HarmonicGeometry {
+  ellipse: Ellipse
+  sampler: (angleIndex: number) => Point
+}
+
 interface Point {
   x: number
   y: number
 }
+
+const point = (somePoint: Point) => somePoint
 
 interface Ellipse {
   center: Point
@@ -95,24 +159,6 @@ const ellipsePerimeterPoint = (props: EllipsePerimeterPointProps) => {
     x: rotatedX + someEllipse.center.x,
     y: rotatedY + someEllipse.center.y,
   }
-}
-
-interface EllipsePerimeterSamplesProps {
-  someEllipse: Ellipse
-  sampleCount: number
-}
-
-const ellipsePerimeterSamples = (props: EllipsePerimeterSamplesProps) => {
-  const { someEllipse, sampleCount } = props
-  const angleIndexStep = 1 / sampleCount
-  return Array(sampleCount)
-    .fill(undefined)
-    .map((_, sampleIndex) =>
-      ellipsePerimeterPoint({
-        someEllipse,
-        angleIndex: sampleIndex * angleIndexStep,
-      })
-    )
 }
 
 interface Rectangle {
