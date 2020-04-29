@@ -1,8 +1,8 @@
 import React from 'react'
-import { strokePathPoints } from './shared/Drawing'
+import { strokeShapePath } from './shared/Drawing'
 import {
-    Ellipse, getEllipsePerimeterPoint, getRectangleCenter, getRectangleRoot, makeEllipse, makePoint,
-    makeRectangle, Point
+    Ellipse, getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint,
+    makeRegion, Point, Region, ShapePath
 } from './shared/Geometry'
 import { DrawGraphicProps, GetGraphicGeometryProps, Graphic, GraphicProps } from './shared/Graphic'
 import { CompositeWaveform } from './shared/Waveform'
@@ -11,10 +11,15 @@ export const WaveformStructureGraphic = (
   props: WaveformStructureGraphicProps
 ) => (
   <Graphic
+    graphicSize={{ width: 256, height: 256 }}
+    graphicStyle={{
+      backgroundColor: 'white',
+      structureColor: 'black',
+      structureWidth: 2,
+    }}
     {...props}
     getGraphicGeometry={getGraphicGeometry}
     drawGraphic={drawGraphic}
-    graphicStyle={{}}
   />
 )
 
@@ -23,7 +28,7 @@ export interface WaveformStructureGraphicProps
     GraphicProps<
       CompositeWaveform,
       WaveformStructureGeometry,
-      typeof drawGraphic
+      WaveformStructureStyle
     >,
     'graphicData'
   > {}
@@ -64,25 +69,25 @@ const getGraphicGeometry = (
       maxCompositeRadius: 0,
     }
   )
-  const canvasRectangle = makeRectangle({
+  const canvasRegion = makeRegion({
     anchor: makePoint({ x: 0, y: 0 }),
     width: targetCanvas.width,
     height: targetCanvas.height,
   })
-  const canvasRoot = getRectangleRoot(canvasRectangle)
+  const canvasRoot = getRegionRoot(canvasRegion)
   const targetPadding = canvasRoot / 8
   const targetRoot = canvasRoot - 2 * targetPadding
-  const targetRectangle = makeRectangle({
+  const targetRegion = makeRegion({
     anchor: makePoint({ x: targetPadding, y: targetPadding }),
     width: targetRoot,
     height: targetRoot,
   })
-  const targetCenter = getRectangleCenter(targetRectangle)
+  const targetCenter = getRegionCenter(targetRegion)
   const maxTargetRadius = targetRoot / 2
   const sampleIndexStep = 1 / HARMONIC_ELLIPSE_PERIMETER_SAMPLE_COUNT
   const projectedHarmonicPaths = Array(HARMONIC_ELLIPSE_PERIMETER_SAMPLE_COUNT)
     .fill(undefined)
-    .reduce<Point[][]>(
+    .reduce<ShapePath[]>(
       (harmonicsPathsResult, _, sampleIndex) => {
         const sampleAngleIndex = sampleIndex * sampleIndexStep
         harmonicsPathsResult.forEach((projectedHarmonicPath, harmonicIndex) => {
@@ -107,11 +112,12 @@ const getGraphicGeometry = (
       },
       unitGeometry.harmonics.map(() => [])
     )
-  return { projectedHarmonicPaths }
+  return { targetRegion, projectedHarmonicPaths }
 }
 
 interface WaveformStructureGeometry {
-  projectedHarmonicPaths: Point[][]
+  targetRegion: Region
+  projectedHarmonicPaths: ShapePath[]
 }
 
 interface UnitGeometry {
@@ -124,14 +130,31 @@ interface UnitHarmonicGeometry {
 }
 
 const drawGraphic = (
-  props: DrawGraphicProps<WaveformStructureGeometry, {}>
+  props: DrawGraphicProps<WaveformStructureGeometry, WaveformStructureStyle>
 ) => {
-  const { graphicGeometry, graphicContext } = props
-  const { projectedHarmonicPaths } = graphicGeometry
+  const { graphicGeometry, graphicContext, graphicStyle } = props
+  const { targetRegion, projectedHarmonicPaths } = graphicGeometry
+  graphicContext.fillStyle = graphicStyle.backgroundColor
+  graphicContext.fillRect(
+    targetRegion.anchor.x,
+    targetRegion.anchor.y,
+    targetRegion.width,
+    targetRegion.height
+  )
   projectedHarmonicPaths.forEach((harmonicPath) => {
-    strokePathPoints({
+    strokeShapePath({
       graphicContext,
-      pathPoints: harmonicPath,
+      shapePath: harmonicPath,
+      pathStyle: {
+        lineWidth: graphicStyle.structureWidth,
+        strokeStyle: graphicStyle.structureColor,
+      },
     })
   })
+}
+
+interface WaveformStructureStyle {
+  backgroundColor: string
+  structureColor: string
+  structureWidth: number
 }

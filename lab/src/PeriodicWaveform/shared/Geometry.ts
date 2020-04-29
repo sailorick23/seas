@@ -46,18 +46,20 @@ export const getEllipsePerimeterPoint = (props: EllipsePerimeterPointProps) => {
   }
 }
 
-export interface Rectangle {
+export interface Region {
   anchor: Point
   width: number
   height: number
 }
 
-export const makeRectangle = (someRectangle: Rectangle) => someRectangle
+export const makeRegion = (someRegion: Region) => someRegion
 
-export const getRectangleCenter = (someRectangle: Rectangle) => ({
-  x: someRectangle.anchor.x + someRectangle.width / 2,
-  y: someRectangle.anchor.y + someRectangle.height / 2,
+export const getRegionCenter = (someRegion: Region) => ({
+  x: someRegion.anchor.x + someRegion.width / 2,
+  y: someRegion.anchor.y + someRegion.height / 2,
 })
 
-export const getRectangleRoot = (someRectangle: Rectangle) =>
-  Math.min(someRectangle.width, someRectangle.height)
+export const getRegionRoot = (someRegion: Region) =>
+  Math.min(someRegion.width, someRegion.height)
+
+export interface ShapePath extends Array<Point> {}

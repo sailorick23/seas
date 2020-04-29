@@ -1,9 +1,16 @@
 import React, { useEffect, useRef } from 'react'
+import { Region } from './Geometry'
 
 export const Graphic = <GraphicData, GraphicGeometry, GraphicStyle>(
   props: GraphicProps<GraphicData, GraphicGeometry, GraphicStyle>
 ) => {
-  const { getGraphicGeometry, graphicData, drawGraphic, graphicStyle } = props
+  const {
+    getGraphicGeometry,
+    graphicData,
+    drawGraphic,
+    graphicStyle,
+    graphicSize,
+  } = props
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   useEffect(() => {
     const canvasElement = canvasRef.current
@@ -20,11 +27,18 @@ export const Graphic = <GraphicData, GraphicGeometry, GraphicStyle>(
       })
     }
   }, [graphicData])
-  return <canvas width={256} height={256} ref={canvasRef} />
+  return (
+    <canvas
+      width={graphicSize.width}
+      height={graphicSize.height}
+      ref={canvasRef}
+    />
+  )
 }
 
 export interface GraphicProps<GraphicData, GraphicGeometry, GraphicStyle> {
   graphicData: GraphicData
+  graphicSize: Pick<Region, 'width' | 'height'>
   getGraphicGeometry: (
     props: GetGraphicGeometryProps<GraphicData>
   ) => GraphicGeometry
