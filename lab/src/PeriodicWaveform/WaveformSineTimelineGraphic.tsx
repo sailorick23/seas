@@ -6,8 +6,8 @@ import {
 import { DrawGraphicProps, GetGraphicGeometryProps, Graphic, GraphicProps } from './shared/Graphic'
 import { CompositeWaveform } from './shared/Waveform'
 
-export const WaveformTimelineGraphic = (
-  props: WaveformTimelineGraphicProps
+export const WaveformSineTimelineGraphic = (
+  props: WaveformSineTimelineGraphicProps
 ) => {
   return (
     <Graphic
@@ -24,7 +24,7 @@ export const WaveformTimelineGraphic = (
   )
 }
 
-export interface WaveformTimelineGraphicProps
+export interface WaveformSineTimelineGraphicProps
   extends Pick<
     GraphicProps<
       CompositeWaveform,

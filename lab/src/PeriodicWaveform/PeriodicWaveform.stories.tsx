@@ -1,7 +1,9 @@
 import React from 'react'
 import { CompositeWaveform } from './shared/Waveform'
+import { WaveformCosineTimelineGraphic } from './WaveformCosineTimelineGraphic'
+import { WaveformSineTimelineGraphic } from './WaveformSineTimelineGraphic'
 import { WaveformStructureGraphic } from './WaveformStructureGraphic'
-import { WaveformTimelineGraphic } from './WaveformTimelineGraphic'
+import { WaveformTimeloopGraphic } from './WaveformTimeloopGraphic'
 
 export default {
   title: 'PeriodicWaveform',
@@ -18,6 +20,14 @@ export const CompositeStructureGraphic = () => {
   return <WaveformStructureGraphic graphicData={periodicWaveform} />
 }
 
-export const CompositeTimelineGraphic = () => {
-  return <WaveformTimelineGraphic graphicData={periodicWaveform} />
+export const CompositeSineTimelineGraphic = () => {
+  return <WaveformSineTimelineGraphic graphicData={periodicWaveform} />
+}
+
+export const CompositeCosineTimelineGraphic = () => {
+  return <WaveformCosineTimelineGraphic graphicData={periodicWaveform} />
+}
+
+export const CompositeTimeloopGraphic = () => {
+  return <WaveformTimeloopGraphic graphicData={periodicWaveform} />
 }
