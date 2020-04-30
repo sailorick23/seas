@@ -3,6 +3,7 @@ import { CompositeWaveform } from './shared/Waveform'
 import { WaveformCosineTimelineGraphic } from './WaveformCosineTimelineGraphic'
 import { WaveformSineTimelineGraphic } from './WaveformSineTimelineGraphic'
 import { WaveformStructureGraphic } from './WaveformStructureGraphic'
+import { WaveformTimeloopGraphic } from './WaveformTimeloopGraphic'
 
 export default {
   title: 'PeriodicWaveform',
@@ -25,4 +26,8 @@ export const CompositeSineTimelineGraphic = () => {
 
 export const CompositeCosineTimelineGraphic = () => {
   return <WaveformCosineTimelineGraphic graphicData={periodicWaveform} />
+}
+
+export const CompositeTimeloopGraphic = () => {
+  return <WaveformTimeloopGraphic graphicData={periodicWaveform} />
 }
