@@ -2,7 +2,7 @@ import React from 'react'
 import { strokeShapePath } from './shared/Drawing'
 import {
     Ellipse, getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint,
-    makeRegion, Point, Region, ShapePath
+    makeRegion, ShapePath
 } from './shared/Geometry'
 import { DrawGraphicProps, GetGraphicGeometryProps, Graphic, GraphicProps } from './shared/Graphic'
 import { CompositeWaveform } from './shared/Waveform'
@@ -15,7 +15,7 @@ export const WaveformStructureGraphic = (
     graphicStyle={{
       backgroundColor: 'white',
       structureColor: 'black',
-      structureWidth: 2,
+      structureWidth: 3,
     }}
     {...props}
     getGraphicGeometry={getGraphicGeometry}
@@ -112,11 +112,10 @@ const getGraphicGeometry = (
       },
       unitGeometry.harmonics.map(() => [])
     )
-  return { targetRegion, projectedHarmonicPaths }
+  return { projectedHarmonicPaths }
 }
 
 interface WaveformStructureGeometry {
-  targetRegion: Region
   projectedHarmonicPaths: ShapePath[]
 }
 
@@ -133,13 +132,13 @@ const drawGraphic = (
   props: DrawGraphicProps<WaveformStructureGeometry, WaveformStructureStyle>
 ) => {
   const { graphicGeometry, graphicContext, graphicStyle } = props
-  const { targetRegion, projectedHarmonicPaths } = graphicGeometry
+  const { projectedHarmonicPaths } = graphicGeometry
   graphicContext.fillStyle = graphicStyle.backgroundColor
   graphicContext.fillRect(
-    targetRegion.anchor.x,
-    targetRegion.anchor.y,
-    targetRegion.width,
-    targetRegion.height
+    0,
+    0,
+    graphicContext.canvas.width,
+    graphicContext.canvas.height
   )
   projectedHarmonicPaths.forEach((harmonicPath) => {
     strokeShapePath({
