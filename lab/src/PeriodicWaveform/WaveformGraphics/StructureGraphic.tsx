@@ -1,43 +1,25 @@
 import React from 'react'
-import { strokeShapePath } from './shared/Drawing'
 import {
     Ellipse, getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint,
-    makeRegion, ShapePath
-} from './shared/Geometry'
-import { DrawGraphicProps, GetGraphicGeometryProps, Graphic, GraphicProps } from './shared/Graphic'
-import { CompositeWaveform } from './shared/Waveform'
+    makeRegion, PathType, ShapePath
+} from '../shared/Geometry'
+import { GetGraphicGeometryProps } from '../shared/Graphic'
+import { CompositeWaveform } from '../shared/Waveform'
+import {
+    BaseWaveformGraphic, WaveformGraphicGeometry, WaveformGraphicProps
+} from './BaseWaveformGraphic'
 
-export const WaveformStructureGraphic = (
-  props: WaveformStructureGraphicProps
-) => (
-  <Graphic
-    graphicSize={{ width: 256, height: 256 }}
-    graphicStyle={{
-      backgroundColor: 'white',
-      structureColor: 'black',
-      structureWidth: 3,
-    }}
-    {...props}
-    getGraphicGeometry={getGraphicGeometry}
-    drawGraphic={drawGraphic}
-  />
+export const StructureGraphic = (props: StructureGraphicProps) => (
+  <BaseWaveformGraphic getGraphicGeometry={getGraphicGeometry} {...props} />
 )
 
-export interface WaveformStructureGraphicProps
-  extends Pick<
-    GraphicProps<
-      CompositeWaveform,
-      WaveformStructureGeometry,
-      WaveformStructureStyle
-    >,
-    'graphicData'
-  > {}
+export interface StructureGraphicProps extends WaveformGraphicProps {}
 
 const HARMONIC_ELLIPSE_PERIMETER_SAMPLE_COUNT = 128
 
 const getGraphicGeometry = (
   props: GetGraphicGeometryProps<CompositeWaveform>
-): WaveformStructureGeometry => {
+): WaveformGraphicGeometry => {
   const { graphicData, targetCanvas } = props
   const unitGeometry = graphicData.reduce<UnitGeometry>(
     (unitGeometryResult, harmonicWaveform, harmonicIndex) => {
@@ -87,7 +69,7 @@ const getGraphicGeometry = (
   const sampleIndexStep = 1 / HARMONIC_ELLIPSE_PERIMETER_SAMPLE_COUNT
   const projectedHarmonicPaths = Array(HARMONIC_ELLIPSE_PERIMETER_SAMPLE_COUNT)
     .fill(undefined)
-    .reduce<ShapePath[]>(
+    .reduce<PathType[]>(
       (harmonicsPathsResult, _, sampleIndex) => {
         const sampleAngleIndex = sampleIndex * sampleIndexStep
         harmonicsPathsResult.forEach((projectedHarmonicPath, harmonicIndex) => {
@@ -106,17 +88,13 @@ const getGraphicGeometry = (
                 unitGeometry.maxCompositeRadius +
               targetCenter.y,
           })
-          projectedHarmonicPath.push(projectedSample)
+          projectedHarmonicPath.data.push(projectedSample)
         })
         return harmonicsPathsResult
       },
-      unitGeometry.harmonics.map(() => [])
+      unitGeometry.harmonics.map(() => ({ variant: 'shape', data: [] }))
     )
-  return { projectedHarmonicPaths }
-}
-
-interface WaveformStructureGeometry {
-  projectedHarmonicPaths: ShapePath[]
+  return { waveformPaths: projectedHarmonicPaths }
 }
 
 interface UnitGeometry {
@@ -126,34 +104,4 @@ interface UnitGeometry {
 
 interface UnitHarmonicGeometry {
   ellipse: Ellipse
-}
-
-const drawGraphic = (
-  props: DrawGraphicProps<WaveformStructureGeometry, WaveformStructureStyle>
-) => {
-  const { graphicGeometry, graphicContext, graphicStyle } = props
-  const { projectedHarmonicPaths } = graphicGeometry
-  graphicContext.fillStyle = graphicStyle.backgroundColor
-  graphicContext.fillRect(
-    0,
-    0,
-    graphicContext.canvas.width,
-    graphicContext.canvas.height
-  )
-  projectedHarmonicPaths.forEach((harmonicPath) => {
-    strokeShapePath({
-      graphicContext,
-      shapePath: harmonicPath,
-      pathStyle: {
-        lineWidth: graphicStyle.structureWidth,
-        strokeStyle: graphicStyle.structureColor,
-      },
-    })
-  })
-}
-
-interface WaveformStructureStyle {
-  backgroundColor: string
-  structureColor: string
-  structureWidth: number
 }

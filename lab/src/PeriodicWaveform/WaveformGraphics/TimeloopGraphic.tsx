@@ -2,41 +2,22 @@ import React from 'react'
 import {
     getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint, makeRegion,
     Point
-} from './shared/Geometry'
-import { DrawGraphicProps, GetGraphicGeometryProps, Graphic, GraphicProps } from './shared/Graphic'
-import { CompositeWaveform } from './shared/Waveform'
+} from '../shared/Geometry'
+import { GetGraphicGeometryProps } from '../shared/Graphic'
+import { CompositeWaveform } from '../shared/Waveform'
+import {
+    BaseWaveformGraphic, WaveformGraphicGeometry, WaveformGraphicProps
+} from './BaseWaveformGraphic'
 
-export const WaveformTimeloopGraphic = (
-  props: WaveformTimeloopGraphicProps
-) => {
-  return (
-    <Graphic
-      graphicSize={{ width: 256, height: 256 }}
-      graphicStyle={{
-        backgroundColor: 'white',
-        timelineColor: 'black',
-        timelineWidth: 3,
-      }}
-      {...props}
-      getGraphicGeometry={getGraphicGeometry}
-      drawGraphic={drawGraphic}
-    />
-  )
-}
+export const TimeloopGraphic = (props: TimeloopGraphicProps) => (
+  <BaseWaveformGraphic getGraphicGeometry={getGraphicGeometry} {...props} />
+)
 
-export interface WaveformTimeloopGraphicProps
-  extends Pick<
-    GraphicProps<
-      CompositeWaveform,
-      WaveformTimeloopGeometry,
-      WaveformTimeloopStyle
-    >,
-    'graphicData'
-  > {}
+export interface TimeloopGraphicProps extends WaveformGraphicProps {}
 
 const getGraphicGeometry = (
   props: GetGraphicGeometryProps<CompositeWaveform>
-): WaveformTimeloopGeometry => {
+): WaveformGraphicGeometry => {
   const { graphicData, targetCanvas } = props
   const unitGeometry = graphicData.reduce<UnitGeometry>(
     (unitGeometryResult, harmonicWaveform, harmonicIndex) => {
@@ -102,41 +83,12 @@ const getGraphicGeometry = (
           targetCenter.y,
       })
     })
-  return { projectedTimelineSamples }
-}
-
-interface WaveformTimeloopGeometry {
-  projectedTimelineSamples: Point[]
+  return {
+    waveformPaths: [{ variant: 'sequence', data: projectedTimelineSamples }],
+  }
 }
 
 interface UnitGeometry {
   getCompositeWaveformSample: (timeIndex: number) => Point
   maxCompositeRadius: number
-}
-
-const drawGraphic = (
-  props: DrawGraphicProps<WaveformTimeloopGeometry, WaveformTimeloopStyle>
-) => {
-  const { graphicGeometry, graphicContext, graphicStyle } = props
-  const { projectedTimelineSamples } = graphicGeometry
-  graphicContext.fillStyle = graphicStyle.backgroundColor
-  graphicContext.fillRect(
-    0,
-    0,
-    graphicContext.canvas.width,
-    graphicContext.canvas.height
-  )
-  graphicContext.beginPath()
-  projectedTimelineSamples.forEach((sample) => {
-    graphicContext.lineTo(sample.x, sample.y)
-  })
-  graphicContext.strokeStyle = graphicStyle.timelineColor
-  graphicContext.lineWidth = graphicStyle.timelineWidth
-  graphicContext.stroke()
-}
-
-interface WaveformTimeloopStyle {
-  backgroundColor: string
-  timelineColor: string
-  timelineWidth: number
 }
