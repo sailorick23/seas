@@ -1,42 +1,22 @@
 import React from 'react'
 import {
-    getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint, makeRegion,
-    Point
-} from './shared/Geometry'
-import { DrawGraphicProps, GetGraphicGeometryProps, Graphic, GraphicProps } from './shared/Graphic'
-import { CompositeWaveform } from './shared/Waveform'
+    getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint, makeRegion
+} from '../shared/Geometry'
+import { GetGraphicGeometryProps } from '../shared/Graphic'
+import { CompositeWaveform } from '../shared/Waveform'
+import {
+    BaseWaveformGraphic, WaveformGraphicGeometry, WaveformGraphicProps
+} from './BaseWaveformGraphic'
 
-export const WaveformCosineTimelineGraphic = (
-  props: WaveformCosineTimelineGraphicProps
-) => {
-  return (
-    <Graphic
-      graphicSize={{ width: 256, height: 256 }}
-      graphicStyle={{
-        backgroundColor: 'white',
-        timelineColor: 'black',
-        timelineWidth: 3,
-      }}
-      {...props}
-      getGraphicGeometry={getGraphicGeometry}
-      drawGraphic={drawGraphic}
-    />
-  )
-}
+export const SineTimelineGraphic = (props: SineTimelineGraphicProps) => (
+  <BaseWaveformGraphic getGraphicGeometry={getGraphicGeometry} {...props} />
+)
 
-export interface WaveformCosineTimelineGraphicProps
-  extends Pick<
-    GraphicProps<
-      CompositeWaveform,
-      WaveformTimelineGeometry,
-      WaveformTimelineStyle
-    >,
-    'graphicData'
-  > {}
+export interface SineTimelineGraphicProps extends WaveformGraphicProps {}
 
 const getGraphicGeometry = (
   props: GetGraphicGeometryProps<CompositeWaveform>
-): WaveformTimelineGeometry => {
+): WaveformGraphicGeometry => {
   const { graphicData, targetCanvas } = props
   const unitGeometry = graphicData.reduce<UnitGeometry>(
     (unitGeometryResult, harmonicWaveform, harmonicIndex) => {
@@ -53,7 +33,7 @@ const getGraphicGeometry = (
             someEllipse: newUnitEllipse,
             angleIndex:
               -newUnitEllipse.rotation + timeIndex * Math.pow(2, harmonicIndex),
-          }).x,
+          }).y,
         maxCompositeRadius:
           unitGeometryResult.maxCompositeRadius +
           Math.max(newUnitEllipse.radiusX, newUnitEllipse.radiusY),
@@ -87,47 +67,18 @@ const getGraphicGeometry = (
       const timeIndex = timeIndexStep * sampleIndex
       const unitSample = unitGeometry.getCompositeWaveformSample(timeIndex)
       return makePoint({
-        x:
+        x: timeIndex * targetRegion.width + targetRegion.anchor.x,
+        y:
           (maxTargetRadius * unitSample) / unitGeometry.maxCompositeRadius +
-          targetCenter.x,
-        y: timeIndex * targetRegion.height + targetRegion.anchor.y,
+          targetCenter.y,
       })
     })
-  return { projectedTimelineSamples }
-}
-
-interface WaveformTimelineGeometry {
-  projectedTimelineSamples: Point[]
+  return {
+    waveformPaths: [{ variant: 'sequence', data: projectedTimelineSamples }],
+  }
 }
 
 interface UnitGeometry {
   getCompositeWaveformSample: (timeIndex: number) => number
   maxCompositeRadius: number
-}
-
-const drawGraphic = (
-  props: DrawGraphicProps<WaveformTimelineGeometry, WaveformTimelineStyle>
-) => {
-  const { graphicGeometry, graphicContext, graphicStyle } = props
-  const { projectedTimelineSamples } = graphicGeometry
-  graphicContext.fillStyle = graphicStyle.backgroundColor
-  graphicContext.fillRect(
-    0,
-    0,
-    graphicContext.canvas.width,
-    graphicContext.canvas.height
-  )
-  graphicContext.beginPath()
-  projectedTimelineSamples.forEach((sample) => {
-    graphicContext.lineTo(sample.x, sample.y)
-  })
-  graphicContext.strokeStyle = graphicStyle.timelineColor
-  graphicContext.lineWidth = graphicStyle.timelineWidth
-  graphicContext.stroke()
-}
-
-interface WaveformTimelineStyle {
-  backgroundColor: string
-  timelineColor: string
-  timelineWidth: number
 }

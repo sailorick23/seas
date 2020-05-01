@@ -62,4 +62,15 @@ export const getRegionCenter = (someRegion: Region) => ({
 export const getRegionRoot = (someRegion: Region) =>
   Math.min(someRegion.width, someRegion.height)
 
-export interface ShapePath extends Array<Point> {}
+export type PathType = SequencePath | ShapePath
+
+export interface SequencePath extends BasePath<'sequence'> {}
+
+export interface ShapePath extends BasePath<'shape'> {}
+
+export interface BasePath<Variant extends PathVariant> {
+  variant: Variant
+  data: Array<Point>
+}
+
+export type PathVariant = 'sequence' | 'shape'
