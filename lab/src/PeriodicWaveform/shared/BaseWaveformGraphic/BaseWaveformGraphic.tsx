@@ -1,7 +1,7 @@
 import React from 'react'
-import { PathType } from '../shared/Geometry'
-import { DrawGraphicProps, Graphic, GraphicProps } from '../shared/Graphic'
-import { CompositeWaveform } from '../shared/Waveform'
+import { PathType } from '../Geometry'
+import { DrawGraphicProps, Graphic, GraphicProps } from '../Graphic'
+import { CompositeWaveform } from '../Waveform'
 
 export const BaseWaveformGraphic = (props: BaseWaveformGraphicProps) => {
   return <Graphic drawGraphic={drawGraphic} {...props} />

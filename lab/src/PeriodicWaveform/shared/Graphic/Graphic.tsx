@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import { Region } from './Geometry'
+import { Region } from '../Geometry'
 
 export const Graphic = <GraphicData, GraphicGeometry, GraphicStyle>(
   props: GraphicProps<GraphicData, GraphicGeometry, GraphicStyle>
@@ -26,7 +26,7 @@ export const Graphic = <GraphicData, GraphicGeometry, GraphicStyle>(
         graphicGeometry,
       })
     }
-  }, [graphicData])
+  }, [getGraphicGeometry, graphicData, drawGraphic, graphicStyle])
   return (
     <canvas
       width={graphicSize.width}

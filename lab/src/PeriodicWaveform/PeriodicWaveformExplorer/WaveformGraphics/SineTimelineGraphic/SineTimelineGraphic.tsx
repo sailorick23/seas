@@ -1,19 +1,18 @@
 import React from 'react'
 import {
-    getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint, makeRegion,
-    Point
-} from '../shared/Geometry'
-import { GetGraphicGeometryProps } from '../shared/Graphic'
-import { CompositeWaveform } from '../shared/Waveform'
-import {
     BaseWaveformGraphic, WaveformGraphicGeometry, WaveformGraphicProps
-} from './BaseWaveformGraphic'
+} from '../../../shared/BaseWaveformGraphic'
+import {
+    getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint, makeRegion
+} from '../../../shared/Geometry'
+import { GetGraphicGeometryProps } from '../../../shared/Graphic'
+import { CompositeWaveform } from '../../../shared/Waveform'
 
-export const TimeloopGraphic = (props: TimeloopGraphicProps) => (
+export const SineTimelineGraphic = (props: SineTimelineGraphicProps) => (
   <BaseWaveformGraphic getGraphicGeometry={getGraphicGeometry} {...props} />
 )
 
-export interface TimeloopGraphicProps extends WaveformGraphicProps {}
+export interface SineTimelineGraphicProps extends WaveformGraphicProps {}
 
 const getGraphicGeometry = (
   props: GetGraphicGeometryProps<CompositeWaveform>
@@ -28,27 +27,20 @@ const getGraphicGeometry = (
         rotation: harmonicWaveform.phase,
       })
       return {
-        getCompositeWaveformSample: (timeIndex: number) => {
-          const baseVectorPoint = unitGeometryResult.getCompositeWaveformSample(
-            timeIndex
-          )
-          const newVectorPoint = getEllipsePerimeterPoint({
+        getCompositeWaveformSample: (timeIndex: number) =>
+          unitGeometryResult.getCompositeWaveformSample(timeIndex) +
+          getEllipsePerimeterPoint({
             someEllipse: newUnitEllipse,
             angleIndex:
               -newUnitEllipse.rotation + timeIndex * Math.pow(2, harmonicIndex),
-          })
-          return makePoint({
-            x: baseVectorPoint.x + newVectorPoint.x,
-            y: baseVectorPoint.y + newVectorPoint.y,
-          })
-        },
+          }).y,
         maxCompositeRadius:
           unitGeometryResult.maxCompositeRadius +
           Math.max(newUnitEllipse.radiusX, newUnitEllipse.radiusY),
       }
     },
     {
-      getCompositeWaveformSample: () => makePoint({ x: 0, y: 0 }),
+      getCompositeWaveformSample: () => 0,
       maxCompositeRadius: 0,
     }
   )
@@ -67,7 +59,7 @@ const getGraphicGeometry = (
   })
   const targetCenter = getRegionCenter(targetRegion)
   const maxTargetRadius = targetRoot / 2
-  const sampleCount = 256
+  const sampleCount = 128
   const timeIndexStep = 1 / (sampleCount - 1)
   const projectedTimelineSamples = Array(sampleCount)
     .fill(undefined)
@@ -75,11 +67,9 @@ const getGraphicGeometry = (
       const timeIndex = timeIndexStep * sampleIndex
       const unitSample = unitGeometry.getCompositeWaveformSample(timeIndex)
       return makePoint({
-        x:
-          (maxTargetRadius * unitSample.x) / unitGeometry.maxCompositeRadius +
-          targetCenter.x,
+        x: timeIndex * targetRegion.width + targetRegion.anchor.x,
         y:
-          (maxTargetRadius * unitSample.y) / unitGeometry.maxCompositeRadius +
+          (maxTargetRadius * unitSample) / unitGeometry.maxCompositeRadius +
           targetCenter.y,
       })
     })
@@ -89,6 +79,6 @@ const getGraphicGeometry = (
 }
 
 interface UnitGeometry {
-  getCompositeWaveformSample: (timeIndex: number) => Point
+  getCompositeWaveformSample: (timeIndex: number) => number
   maxCompositeRadius: number
 }

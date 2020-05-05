@@ -1,13 +1,13 @@
 import React from 'react'
 import {
-    Ellipse, getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint,
-    makeRegion, PathType, ShapePath
-} from '../shared/Geometry'
-import { GetGraphicGeometryProps } from '../shared/Graphic'
-import { CompositeWaveform } from '../shared/Waveform'
-import {
     BaseWaveformGraphic, WaveformGraphicGeometry, WaveformGraphicProps
-} from './BaseWaveformGraphic'
+} from '../../../shared/BaseWaveformGraphic'
+import {
+    Ellipse, getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint,
+    makeRegion, PathType
+} from '../../../shared/Geometry'
+import { GetGraphicGeometryProps } from '../../../shared/Graphic'
+import { CompositeWaveform } from '../../../shared/Waveform'
 
 export const StructureGraphic = (props: StructureGraphicProps) => (
   <BaseWaveformGraphic getGraphicGeometry={getGraphicGeometry} {...props} />

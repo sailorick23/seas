@@ -1,0 +1,35 @@
+.rootContainer {
+  width: 256px;
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  font-style: oblique;
+  font-size: 13px;
+}
+
+.fieldsContainer {
+  display: flex;
+  flex-direction: column;
+  padding-left: 4px;
+}
+
+.fieldContainer {
+  padding-top: 4px;
+}
+
+.buttonsContainer {
+  display: flex;
+  flex-direction: row-reverse;
+  padding-top: 8px;
+  padding-right: 6px;
+}
+
+.buttonContainer {
+  width: 56px;
+}
+
+.buttonContainer:first-child {
+  margin-left: 6px;
+}

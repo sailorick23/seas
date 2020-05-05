@@ -1,12 +1,12 @@
 import React from 'react'
 import {
-    getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint, makeRegion
-} from '../shared/Geometry'
-import { GetGraphicGeometryProps } from '../shared/Graphic'
-import { CompositeWaveform } from '../shared/Waveform'
-import {
     BaseWaveformGraphic, WaveformGraphicGeometry, WaveformGraphicProps
-} from './BaseWaveformGraphic'
+} from '../../../shared/BaseWaveformGraphic'
+import {
+    getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint, makeRegion
+} from '../../../shared/Geometry'
+import { GetGraphicGeometryProps } from '../../../shared/Graphic'
+import { CompositeWaveform } from '../../../shared/Waveform'
 
 export const CosineTimelineGraphic = (props: CosineTimelineGraphicProps) => (
   <BaseWaveformGraphic getGraphicGeometry={getGraphicGeometry} {...props} />

@@ -1,0 +1,22 @@
+.rootContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+.emptyWaveformNotice {
+  padding-top: 32px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.graphicsContainerA {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+}
+
+.graphicsContainerB {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
