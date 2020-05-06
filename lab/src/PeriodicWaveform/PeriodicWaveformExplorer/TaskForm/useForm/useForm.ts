@@ -1,7 +1,10 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import * as yup from 'yup'
+import { FieldSchema, Form, FormErrors, FormSchema, FormValues } from '../../../shared/Form'
 
-export const useForm = <T extends FormSchema>(formSchema: T): Form<T> => {
+export const useForm = <SomeFormSchema extends FormSchema>(
+  formSchema: SomeFormSchema
+): Form<SomeFormSchema> => {
   const { initialValues, validationSchema } = useMemo(
     () =>
       Object.values<FieldSchema>(formSchema).reduce<any>(
@@ -19,62 +22,18 @@ export const useForm = <T extends FormSchema>(formSchema: T): Form<T> => {
       ),
     [formSchema]
   )
-  const [formValues, setFormValues] = useState(initialValues)
-  const [formErrors, setFormErrors] = useState<any>({})
-  useEffect(() => {
-    setFormValues(initialValues)
-    setFormErrors({})
-  }, [initialValues])
+  const [formValues, setFormValues] = useState<FormValues<SomeFormSchema>>(
+    initialValues
+  )
+  const [formErrors, setFormErrors] = useState<FormErrors<SomeFormSchema>>({})
   return {
     schema: formSchema,
     inputValues: formValues,
     validationSchema: yup.object().shape(validationSchema),
     errors: formErrors,
-    setValue: (fieldKey: string, fieldValue: string) => {
+    setValue: ({ fieldKey, fieldValue }) => {
       setFormValues({ ...formValues, [fieldKey]: fieldValue })
     },
     setErrors: setFormErrors,
   }
-}
-
-export const makeFormSchema = <T extends FormSchema>(formSchema: T): T =>
-  formSchema
-
-export interface FormSchema {
-  [key: string]: FieldSchema
-}
-
-export type InputValues<T extends FormSchema> = {
-  [K in keyof T]: T[K]['valueSchema']
-}
-
-export type TargetValues<T extends FormSchema> = {
-  [K in keyof T]: ReturnType<T[K]['valueSchema']['validateSync']>
-}
-
-export interface Form<T extends FormSchema> {
-  schema: T
-  inputValues: InputValues<T>
-  errors: any
-  validationSchema: yup.Schema<TargetValues<T>>
-  setValue: (fieldKey: string, fieldValue: string) => void
-  setErrors: (errors: any) => void
-}
-
-type FieldVariant = 'text'
-
-type FieldSchema = BaseFieldSchema<'text', string, number>
-
-interface BaseFieldSchema<
-  fieldVariant extends FieldVariant,
-  InputValue,
-  TargetValue
-> {
-  key: string
-  name: string
-  variant: fieldVariant
-  initialValue: InputValue
-  valueSchema: yup.Schema<TargetValue>
-  label: string
-  order: number
 }

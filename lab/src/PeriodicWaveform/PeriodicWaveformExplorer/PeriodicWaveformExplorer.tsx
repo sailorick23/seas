@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as yup from 'yup'
+import { makeFormSchema } from '../shared/Form'
 import { CompositeWaveform } from '../shared/Waveform'
 import { ActionPalette } from './ActionPalette'
 import styles from './PeriodicWaveformExplorer.module.css'
 import { TaskForm, TaskFormProps } from './TaskForm'
-import { makeFormSchema } from './TaskForm/useForm'
 import { OscillatorStatus, useOscillator } from './useOscillator'
 import { WaveformGraphics } from './WaveformGraphics'
 
@@ -60,8 +60,7 @@ export const PeriodicWaveformExplorer = (
                       valueSchema: yup
                         .number()
                         .typeError('must be a number')
-                        .positive('must be greater than 0')
-                        .max(1, 'must be less than or equal to 1'),
+                        .positive('must be greater than 0'),
                       name: 'magnitudeX',
                       label: 'magnitude x',
                       order: 0,
@@ -73,8 +72,7 @@ export const PeriodicWaveformExplorer = (
                       valueSchema: yup
                         .number()
                         .typeError('must be a number')
-                        .positive('must be greater than 0')
-                        .max(1, 'must be less than or equal to 1'),
+                        .positive('must be greater than 0'),
                       name: 'magnitudeY',
                       label: 'magnitude y',
                       order: 1,

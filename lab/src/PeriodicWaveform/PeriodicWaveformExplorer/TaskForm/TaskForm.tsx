@@ -1,11 +1,14 @@
 import React, { useMemo } from 'react'
 import * as yup from 'yup'
+import { Form, FormSchema } from '../../shared/Form'
 import { StupidButton } from '../../shared/StupidButton'
 import styles from './TaskForm.module.css'
 import { TextField } from './TextField'
-import { Form, FormSchema, useForm } from './useForm'
+import { useForm } from './useForm'
 
-export const TaskForm = <T extends FormSchema>(props: TaskFormProps<T>) => {
+export const TaskForm = <SomeFormSchema extends FormSchema>(
+  props: TaskFormProps<SomeFormSchema>
+) => {
   const { formSchema, label, onCancel, onSubmit } = props
   const form = useForm(formSchema)
   const sortedFieldSchemas = useMemo(
@@ -29,10 +32,10 @@ export const TaskForm = <T extends FormSchema>(props: TaskFormProps<T>) => {
               errorMessage={form.errors[fieldSchema.key]}
               autoFocus={fieldSchema.order === 0}
               onChange={(changeEvent) => {
-                form.setValue(
-                  changeEvent.currentTarget.name,
-                  changeEvent.currentTarget.value
-                )
+                form.setValue({
+                  fieldKey: 'changeEvent.currentTarget.name',
+                  fieldValue: changeEvent.currentTarget.value,
+                })
               }}
             />
           </div>
@@ -79,11 +82,13 @@ export const TaskForm = <T extends FormSchema>(props: TaskFormProps<T>) => {
   )
 }
 
-export interface TaskFormProps<T extends FormSchema> {
+export interface TaskFormProps<SomeFormSchema extends FormSchema> {
   label: string
-  formSchema: T
+  formSchema: SomeFormSchema
   onCancel: () => void
   onSubmit: (
-    formValues: ReturnType<Form<T>['validationSchema']['validateSync']>
+    formValues: ReturnType<
+      Form<SomeFormSchema>['validationSchema']['validateSync']
+    >
   ) => void
 }
