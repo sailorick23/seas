@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
-import * as yup from 'yup'
-import { Form, FormSchema } from '../../shared/Form'
+import { ValidationError } from 'yup'
+import { FieldSchema, FormErrors, FormSchema, FormTargets } from '../../shared/Form'
 import { StupidButton } from '../../shared/StupidButton'
 import styles from './TaskForm.module.css'
 import { TextField } from './TextField'
@@ -12,7 +12,10 @@ export const TaskForm = <SomeFormSchema extends FormSchema>(
   const { formSchema, label, onCancel, onSubmit } = props
   const form = useForm(formSchema)
   const sortedFieldSchemas = useMemo(
-    () => Object.values<any>(form.schema).sort((a, b) => a.order - b.order),
+    () =>
+      Object.values<FieldSchema>(form.schema).sort(
+        (fieldSchemaA, fieldSchemaB) => fieldSchemaA.order - fieldSchemaB.order
+      ),
     [form.schema]
   )
   const fields = useMemo(
@@ -28,12 +31,12 @@ export const TaskForm = <SomeFormSchema extends FormSchema>(
           <div key={key} className={styles.fieldContainer}>
             <TextField
               {...textFieldProps}
-              value={form.inputValues[fieldSchema.key]}
+              value={form.values[fieldSchema.key]}
               errorMessage={form.errors[fieldSchema.key]}
               autoFocus={fieldSchema.order === 0}
               onChange={(changeEvent) => {
                 form.setValue({
-                  fieldKey: 'changeEvent.currentTarget.name',
+                  fieldKey: changeEvent.currentTarget.name,
                   fieldValue: changeEvent.currentTarget.value,
                 })
               }}
@@ -51,23 +54,20 @@ export const TaskForm = <SomeFormSchema extends FormSchema>(
         <div className={styles.buttonContainer}>
           <StupidButton
             onClick={() => {
-              form.validationSchema
-                .validate(form.inputValues, {
-                  abortEarly: false,
-                  stripUnknown: true,
+              form
+                .validate()
+                .then((validValues) => {
+                  onSubmit(validValues)
                 })
-                .then((validatedValues) => {
-                  onSubmit(validatedValues)
-                })
-                .catch((validationError: yup.ValidationError) => {
-                  const formErrors = validationError.inner.reduce<any>(
-                    (formErrorsResult, fieldError) => {
-                      formErrorsResult[fieldError.path] = fieldError.message
-                      return formErrorsResult
-                    },
-                    {}
-                  )
-                  form.setErrors(formErrors)
+                .catch((validationError: ValidationError) => {
+                  const nextFormErrors = validationError.inner.reduce<
+                    FormErrors<SomeFormSchema>
+                  >((formErrorsResult, fieldError) => {
+                    const fieldKey: keyof SomeFormSchema = fieldError.path
+                    formErrorsResult[fieldKey] = fieldError.message
+                    return formErrorsResult
+                  }, {})
+                  form.setErrors(nextFormErrors)
                 })
             }}
           >
@@ -82,13 +82,9 @@ export const TaskForm = <SomeFormSchema extends FormSchema>(
   )
 }
 
-export interface TaskFormProps<SomeFormSchema extends FormSchema> {
+export interface TaskFormProps<SomeFormSchema extends FormSchema = any> {
   label: string
   formSchema: SomeFormSchema
   onCancel: () => void
-  onSubmit: (
-    formValues: ReturnType<
-      Form<SomeFormSchema>['validationSchema']['validateSync']
-    >
-  ) => void
+  onSubmit: (formValues: FormTargets<SomeFormSchema>) => void
 }

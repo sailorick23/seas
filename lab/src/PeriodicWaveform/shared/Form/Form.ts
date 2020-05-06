@@ -2,9 +2,11 @@ import { ObjectSchema, Schema } from 'yup'
 
 export interface Form<SomeFormSchema extends FormSchema> {
   schema: SomeFormSchema
-  inputValues: FormValues<SomeFormSchema>
+  values: FormValues<SomeFormSchema>
   setValue: FormValueSetter<SomeFormSchema>
-  validationSchema: ObjectSchema<FormTargets<SomeFormSchema>>
+  validate: () => ReturnType<
+    ObjectSchema<FormTargets<SomeFormSchema>>['validate']
+  >
   errors: FormErrors<SomeFormSchema>
   setErrors: (errors: FormErrors<SomeFormSchema>) => void
 }
@@ -17,18 +19,43 @@ export const makeFormSchema = <SomeFormSchema extends FormSchema>(
   formSchema: SomeFormSchema
 ): SomeFormSchema => formSchema
 
-export type FormValues<SomeFormSchema extends FormSchema> = {
-  [FieldKey in keyof SomeFormSchema]: SomeFormSchema[FieldKey]['valueSchema']
+export type FormSchemaFieldProperty<
+  SomeFormSchema extends FormSchema,
+  SomeFieldSchemaKey extends keyof FieldSchema
+> = {
+  [FieldKey in keyof SomeFormSchema]: FieldSchemaProperty<
+    SomeFormSchema,
+    FieldKey,
+    SomeFieldSchemaKey
+  >
+}
+
+export type FieldSchemaProperty<
+  SomeFormSchema extends FormSchema,
+  SomeFieldKey extends keyof SomeFormSchema,
+  SomeFieldSchemaKey extends keyof SomeFormSchema[SomeFieldKey]
+> = SomeFormSchema[SomeFieldKey][SomeFieldSchemaKey]
+
+export type FormValues<
+  SomeFormSchema extends FormSchema
+> = FormSchemaFieldProperty<SomeFormSchema, 'initialValue'>
+
+export type FormValueSchemas<
+  SomeFormSchema extends FormSchema
+> = FormSchemaFieldProperty<SomeFormSchema, 'valueSchema'>
+
+export type FormTargets<SomeFormSchema extends FormSchema> = {
+  [FieldKey in keyof SomeFormSchema]: FieldSchemaProperty<
+    SomeFormSchema,
+    FieldKey,
+    'valueSchema'
+  > extends Schema<infer SomeTargetValue>
+    ? SomeTargetValue
+    : never
 }
 
 export type FormErrors<SomeFormSchema extends FormSchema> = {
   [FieldKey in keyof SomeFormSchema]?: string
-}
-
-export type FormTargets<SomeFormSchema extends FormSchema> = {
-  [FieldKey in keyof SomeFormSchema]: ReturnType<
-    SomeFormSchema[FieldKey]['valueSchema']['validateSync']
-  >
 }
 
 export type FormValueSetter<
@@ -36,13 +63,12 @@ export type FormValueSetter<
   FieldSetterProps = {
     [FieldKey in keyof SomeFormSchema]: {
       fieldKey: FieldKey
-      fieldValue: SomeFormSchema[FieldKey]['initialValue']
+      fieldValue: FieldSchemaProperty<SomeFormSchema, FieldKey, 'initialValue'>
     }
-  },
-  FieldSetterPropsUnion = FieldSetterProps[keyof FieldSetterProps]
-> = (props: FieldSetterPropsUnion) => void
+  }
+> = (props: FieldSetterProps[keyof FieldSetterProps]) => void
 
-export type FieldSchema = TextFieldSchema<number>
+export type FieldSchema = TextFieldSchema<number> | TextFieldSchema<string>
 
 export interface TextFieldSchema<TargetValue>
   extends BaseFieldSchema<'text', string, TargetValue> {}

@@ -15,9 +15,9 @@ export const PeriodicWaveformExplorer = (
     { magnitudeX: 1, magnitudeY: 1, phase: 0 },
   ])
   const oscillator = useOscillator(periodicWaveform)
-  const [activeTaskForm, setActiveTaskForm] = useState<TaskFormProps<
-    any
-  > | null>(null)
+  const [activeTaskForm, setActiveTaskForm] = useState<TaskFormProps | null>(
+    null
+  )
   const periodicWaveformRef = useRef(periodicWaveform)
   useEffect(() => {
     periodicWaveformRef.current = periodicWaveform
