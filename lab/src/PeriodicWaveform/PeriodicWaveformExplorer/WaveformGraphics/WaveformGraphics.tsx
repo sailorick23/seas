@@ -8,12 +8,19 @@ import styles from './WaveformGraphics.module.css'
 
 export const WaveformGraphics = (props: WaveformGraphicsProps) => {
   const { graphicData } = props
+  const emptyWaveform = !graphicData.length
   return (
     <div className={styles.rootContainer}>
-      {!graphicData.length ? (
+      {emptyWaveform ? (
         <div className={styles.emptyWaveformNotice}>empty waveform</div>
       ) : null}
-      <div className={styles.graphicsContainerA}>
+      <div
+        className={
+          emptyWaveform
+            ? styles.hiddenGraphicsContainer
+            : styles.graphicsContainerA
+        }
+      >
         <StructureGraphic
           graphicSize={GRAPHIC_SIZE}
           graphicStyle={GRAPHIC_STYLE}

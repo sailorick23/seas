@@ -6,6 +6,13 @@ import styles from './TaskForm.module.css'
 import { TextField } from './TextField'
 import { useForm } from './useForm'
 
+export interface TaskFormProps<SomeFormSchema extends FormSchema> {
+  label: string
+  formSchema: SomeFormSchema
+  onCancel: () => void
+  onSubmit: (formValues: FormTargets<SomeFormSchema>) => void
+}
+
 export const TaskForm = <SomeFormSchema extends FormSchema>(
   props: TaskFormProps<SomeFormSchema>
 ) => {
@@ -80,11 +87,4 @@ export const TaskForm = <SomeFormSchema extends FormSchema>(
       </div>
     </div>
   )
-}
-
-export interface TaskFormProps<SomeFormSchema extends FormSchema> {
-  label: string
-  formSchema: SomeFormSchema
-  onCancel: () => void
-  onSubmit: (formValues: FormTargets<SomeFormSchema>) => void
 }

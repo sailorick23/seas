@@ -9,46 +9,44 @@ import {
 import { GetGraphicGeometryProps } from '../../../shared/Graphic'
 import { CompositeWaveform } from '../../../shared/Waveform'
 
+export interface StructureGraphicProps extends WaveformGraphicProps {}
+
 export const StructureGraphic = (props: StructureGraphicProps) => (
   <BaseWaveformGraphic getGraphicGeometry={getGraphicGeometry} {...props} />
 )
-
-export interface StructureGraphicProps extends WaveformGraphicProps {}
-
-const HARMONIC_ELLIPSE_PERIMETER_SAMPLE_COUNT = 128
 
 const getGraphicGeometry = (
   props: GetGraphicGeometryProps<CompositeWaveform>
 ): WaveformGraphicGeometry => {
   const { graphicData, targetCanvas } = props
-  const unitGeometry = graphicData.reduce<UnitGeometry>(
+  const { unitHarmonics, maxCompositeUnitRadius } = graphicData.reduce<
+    UnitGeometry
+  >(
     (unitGeometryResult, harmonicWaveform, harmonicIndex) => {
-      const previousGeometry = unitGeometryResult.harmonics[harmonicIndex - 1]
-      const newEllipseCenter = previousGeometry
+      const { unitHarmonics, maxCompositeUnitRadius } = unitGeometryResult
+      const parentEllipse = unitHarmonics[harmonicIndex - 1]
+      const childCenter = parentEllipse
         ? getEllipsePerimeterPoint({
-            someEllipse: previousGeometry.ellipse,
-            angleIndex: -previousGeometry.ellipse.rotation,
+            someEllipse: parentEllipse,
+            angleIndex: -parentEllipse.rotation,
           })
         : makePoint({ x: 0, y: 0 })
-      const newUnitEllipse = makeEllipse({
-        center: newEllipseCenter,
+      const childEllipse = makeEllipse({
+        center: childCenter,
         radiusX: harmonicWaveform.magnitudeX,
         radiusY: harmonicWaveform.magnitudeY,
         rotation: harmonicWaveform.phase,
       })
-      unitGeometryResult.harmonics.push({
-        ellipse: newUnitEllipse,
-      })
       return {
-        harmonics: unitGeometryResult.harmonics,
-        maxCompositeRadius:
-          unitGeometryResult.maxCompositeRadius +
-          Math.max(newUnitEllipse.radiusX, newUnitEllipse.radiusY),
+        unitHarmonics: [...unitHarmonics, childEllipse],
+        maxCompositeUnitRadius:
+          maxCompositeUnitRadius +
+          Math.max(childEllipse.radiusX, childEllipse.radiusY),
       }
     },
     {
-      harmonics: [],
-      maxCompositeRadius: 0,
+      unitHarmonics: [],
+      maxCompositeUnitRadius: 0,
     }
   )
   const canvasRegion = makeRegion({
@@ -73,35 +71,31 @@ const getGraphicGeometry = (
       (harmonicsPathsResult, _, sampleIndex) => {
         const sampleAngleIndex = sampleIndex * sampleIndexStep
         harmonicsPathsResult.forEach((projectedHarmonicPath, harmonicIndex) => {
-          const unitHarmonicGeometry = unitGeometry.harmonics[harmonicIndex]
+          const unitEllipse = unitHarmonics[harmonicIndex]
           const unitSample = getEllipsePerimeterPoint({
-            someEllipse: unitHarmonicGeometry.ellipse,
+            someEllipse: unitEllipse,
             angleIndex: sampleAngleIndex,
           })
           const projectedSample = makePoint({
             x:
-              (maxTargetRadius * unitSample.x) /
-                unitGeometry.maxCompositeRadius +
+              (maxTargetRadius * unitSample.x) / maxCompositeUnitRadius +
               targetCenter.x,
             y:
-              (maxTargetRadius * unitSample.y) /
-                unitGeometry.maxCompositeRadius +
+              (maxTargetRadius * unitSample.y) / maxCompositeUnitRadius +
               targetCenter.y,
           })
           projectedHarmonicPath.data.push(projectedSample)
         })
         return harmonicsPathsResult
       },
-      unitGeometry.harmonics.map(() => ({ variant: 'shape', data: [] }))
+      unitHarmonics.map(() => ({ variant: 'shape', data: [] }))
     )
   return { waveformPaths: projectedHarmonicPaths }
 }
 
 interface UnitGeometry {
-  harmonics: UnitHarmonicGeometry[]
-  maxCompositeRadius: number
+  unitHarmonics: Ellipse[]
+  maxCompositeUnitRadius: number
 }
 
-interface UnitHarmonicGeometry {
-  ellipse: Ellipse
-}
+const HARMONIC_ELLIPSE_PERIMETER_SAMPLE_COUNT = 128

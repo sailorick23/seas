@@ -15,6 +15,11 @@
   align-items: flex-start;
 }
 
+.hiddenGraphicsContainer {
+  composes: graphicsContainerA;
+  visibility: hidden;
+}
+
 .graphicsContainerB {
   display: flex;
   flex-direction: column;

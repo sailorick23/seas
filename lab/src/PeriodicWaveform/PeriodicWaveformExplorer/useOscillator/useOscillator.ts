@@ -1,12 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { getEllipsePerimeterSine } from '../../shared/Geometry'
+import { getEllipsePerimeterSine, makeEllipse, makePoint } from '../../shared/Geometry'
 import { CompositeWaveform } from '../../shared/Waveform'
-
-export interface Oscillator {
-  readonly status: OscillatorStatus
-  readonly isStable: boolean
-  readonly toggle: () => void
-}
 
 export enum OscillatorStatus {
   IDLE,
@@ -15,14 +9,22 @@ export enum OscillatorStatus {
   STOPPING,
 }
 
+export interface Oscillator {
+  readonly status: OscillatorStatus
+  readonly isStable: boolean
+  readonly toggle: () => void
+}
+
 export const useOscillator = (
   periodicWaveform: CompositeWaveform
 ): Oscillator => {
-  const audioContextRef = useRef<AudioContext | undefined>(undefined)
-  const bufferSourceRef = useRef<AudioBufferSourceNode | null>(null)
   const [oscillatorStatus, setOscillatorStatus] = useState(
     OscillatorStatus.IDLE
   )
+  const periodicWaveformRef = useRef(periodicWaveform)
+  const oscillatorStatusRef = useRef(oscillatorStatus)
+  const audioContextRef = useRef<AudioContext | undefined>(undefined)
+  const bufferSourceRef = useRef<AudioBufferSourceNode | null>(null)
   useEffect(() => {
     if (
       bufferSourceRef.current &&
@@ -39,8 +41,8 @@ export const useOscillator = (
       const audioContext = audioContextRef.current
       const nextBufferSource = audioContext.createBufferSource()
       const sampleResolution = Math.floor(audioContext.sampleRate / 220)
-      const periodicWaveSamples = computePeriodicWaveSamples({
-        periodicWaveform,
+      const periodicWaveSamples = getPeriodicWaveSamples({
+        periodicWaveform: periodicWaveformRef.current,
         samplesPerPeriod: sampleResolution,
       })
       const periodicWaveBuffer = audioContext.createBuffer(
@@ -61,23 +63,25 @@ export const useOscillator = (
       bufferSourceRef.current = nextBufferSource
       setOscillatorStatus(OscillatorStatus.PLAYING)
     }
-  }, [oscillatorStatus, periodicWaveform])
+    oscillatorStatusRef.current = oscillatorStatus
+  }, [oscillatorStatus])
   useEffect(() => {
     if (
       bufferSourceRef.current &&
       periodicWaveform.length === 0 &&
-      oscillatorStatus === OscillatorStatus.PLAYING
+      oscillatorStatusRef.current === OscillatorStatus.PLAYING
     ) {
       setOscillatorStatus(OscillatorStatus.STOPPING)
     } else if (
       bufferSourceRef.current &&
-      oscillatorStatus === OscillatorStatus.PLAYING
+      oscillatorStatusRef.current === OscillatorStatus.PLAYING
     ) {
       const bufferSource = bufferSourceRef.current
       bufferSource.stop()
       bufferSource.disconnect()
       setOscillatorStatus(OscillatorStatus.STARTING)
     }
+    periodicWaveformRef.current = periodicWaveform
   }, [periodicWaveform])
   const oscillatorIsStable =
     oscillatorStatus === OscillatorStatus.IDLE ||
@@ -109,41 +113,42 @@ interface PeriodicWaveSamplesProps {
   samplesPerPeriod: number
 }
 
-const computePeriodicWaveSamples = (props: PeriodicWaveSamplesProps) => {
+const getPeriodicWaveSamples = (props: PeriodicWaveSamplesProps) => {
   const { periodicWaveform, samplesPerPeriod } = props
-  const computeNormalSampleMagnitude = periodicWaveform
-    .map((basicWaveform) => {
-      return {
-        center: { x: 0, y: 0 },
+  const getUnitSineSample = periodicWaveform.reduce(
+    (getParentSineSample, basicWaveform, harmonicIndex) => {
+      const childEllipse = makeEllipse({
+        center: makePoint({ x: 0, y: 0 }),
         radiusX: basicWaveform.magnitudeX,
         radiusY: basicWaveform.magnitudeY,
         rotation: basicWaveform.phase,
-      }
-    })
-    .reduce(
-      (compParentSampleMagnitude, ellipse, harmonicIndex) => {
-        return (timeIndex: number) =>
-          compParentSampleMagnitude(timeIndex) +
+      })
+      return (timeIndex: number) => {
+        const childAngleIndex =
+          -childEllipse.rotation + timeIndex * Math.pow(2, harmonicIndex)
+        return (
+          getParentSineSample(timeIndex) +
           getEllipsePerimeterSine({
-            someEllipse: ellipse,
-            angleIndex:
-              -ellipse.rotation + timeIndex * Math.pow(2, harmonicIndex),
+            someEllipse: childEllipse,
+            angleIndex: childAngleIndex,
           })
-      },
-      (periodAngle: number) => 0
-    )
+        )
+      }
+    },
+    (periodAngle: number) => 0
+  )
   const periodStep = 1 / (samplesPerPeriod - 1)
-  const normalSamples = Array(samplesPerPeriod)
+  const unitSineSamples = Array(samplesPerPeriod)
     .fill(null)
     .map((_, sampleIndex) => {
       const periodIndex = periodStep * sampleIndex
-      return computeNormalSampleMagnitude(periodIndex)
+      return getUnitSineSample(periodIndex)
     })
-  const maxAmp = normalSamples.reduce((currentMax, sample) => {
-    return Math.max(Math.abs(sample), currentMax)
+  const maxAmp = unitSineSamples.reduce((currentMax, baseSample) => {
+    return Math.max(Math.abs(baseSample), currentMax)
   }, 0)
-  const fittedSamples = normalSamples.map(
-    (sample) => ((sample / maxAmp) * 11) / 12
+  const projectedSamples = unitSineSamples.map(
+    (unitSample) => ((unitSample / maxAmp) * 11) / 12
   )
-  return fittedSamples
+  return projectedSamples
 }

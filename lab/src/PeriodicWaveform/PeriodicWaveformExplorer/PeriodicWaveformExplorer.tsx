@@ -8,6 +8,8 @@ import { TaskForm, TaskFormProps } from './TaskForm'
 import { OscillatorStatus, useOscillator } from './useOscillator'
 import { WaveformGraphics } from './WaveformGraphics'
 
+export interface PeriodicWaveformExplorerProps {}
+
 export const PeriodicWaveformExplorer = (
   props: PeriodicWaveformExplorerProps
 ) => {
@@ -117,8 +119,6 @@ export const PeriodicWaveformExplorer = (
     </div>
   )
 }
-
-export interface PeriodicWaveformExplorerProps {}
 
 const makeTaskForm = <
   SomeFormSchema extends FormSchema,
