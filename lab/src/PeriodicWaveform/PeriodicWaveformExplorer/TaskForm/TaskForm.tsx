@@ -82,7 +82,7 @@ export const TaskForm = <SomeFormSchema extends FormSchema>(
   )
 }
 
-export interface TaskFormProps<SomeFormSchema extends FormSchema = any> {
+export interface TaskFormProps<SomeFormSchema extends FormSchema> {
   label: string
   formSchema: SomeFormSchema
   onCancel: () => void
