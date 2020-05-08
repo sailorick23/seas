@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { getEllipsePerimeterPoint } from '../../shared/Geometry'
+import { getEllipsePerimeterSine } from '../../shared/Geometry'
 import { CompositeWaveform } from '../../shared/Waveform'
 
 export interface Oscillator {
@@ -65,6 +65,7 @@ export const useOscillator = (
   useEffect(() => {
     if (
       bufferSourceRef.current &&
+      periodicWaveform.length === 0 &&
       oscillatorStatus === OscillatorStatus.PLAYING
     ) {
       setOscillatorStatus(OscillatorStatus.STOPPING)
@@ -123,11 +124,11 @@ const computePeriodicWaveSamples = (props: PeriodicWaveSamplesProps) => {
       (compParentSampleMagnitude, ellipse, harmonicIndex) => {
         return (timeIndex: number) =>
           compParentSampleMagnitude(timeIndex) +
-          getEllipsePerimeterPoint({
+          getEllipsePerimeterSine({
             someEllipse: ellipse,
             angleIndex:
               -ellipse.rotation + timeIndex * Math.pow(2, harmonicIndex),
-          }).y
+          })
       },
       (periodAngle: number) => 0
     )

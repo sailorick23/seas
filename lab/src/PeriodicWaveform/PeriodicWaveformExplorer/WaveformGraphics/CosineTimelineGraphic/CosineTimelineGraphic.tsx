@@ -3,7 +3,7 @@ import {
     BaseWaveformGraphic, WaveformGraphicGeometry, WaveformGraphicProps
 } from '../../../shared/BaseWaveformGraphic'
 import {
-    getEllipsePerimeterPoint, getRegionCenter, getRegionRoot, makeEllipse, makePoint, makeRegion
+    getEllipsePerimeterCosine, getRegionCenter, getRegionRoot, makeEllipse, makePoint, makeRegion
 } from '../../../shared/Geometry'
 import { GetGraphicGeometryProps } from '../../../shared/Graphic'
 import { CompositeWaveform } from '../../../shared/Waveform'
@@ -29,11 +29,11 @@ const getGraphicGeometry = (
       return {
         getCompositeWaveformSample: (timeIndex: number) =>
           unitGeometryResult.getCompositeWaveformSample(timeIndex) +
-          getEllipsePerimeterPoint({
+          getEllipsePerimeterCosine({
             someEllipse: newUnitEllipse,
             angleIndex:
               -newUnitEllipse.rotation + timeIndex * Math.pow(2, harmonicIndex),
-          }).x,
+          }),
         maxCompositeRadius:
           unitGeometryResult.maxCompositeRadius +
           Math.max(newUnitEllipse.radiusX, newUnitEllipse.radiusY),

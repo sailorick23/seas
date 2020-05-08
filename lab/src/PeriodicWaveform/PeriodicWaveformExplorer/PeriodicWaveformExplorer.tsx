@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as Yup from 'yup'
-import { FormSchema, FormTargets, makeFormSchema, makeTextFieldSchema } from '../shared/Form'
+import { FormSchema, makeFormSchema, makeTextFieldSchema } from '../shared/Form'
 import { CompositeWaveform } from '../shared/Waveform'
 import { ActionPalette } from './ActionPalette'
 import styles from './PeriodicWaveformExplorer.module.css'
