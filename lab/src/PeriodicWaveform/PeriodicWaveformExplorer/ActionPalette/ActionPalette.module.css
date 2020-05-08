@@ -1,0 +1,10 @@
+.rootContainer {
+  display: flex;
+  flex-direction: column;
+  width: 128px;
+}
+
+.buttonContainer {
+  padding: 8px;
+  padding-bottom: 0px;
+}

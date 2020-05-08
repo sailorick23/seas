@@ -1,0 +1,38 @@
+body,
+button,
+input {
+  font-family: monospace;
+  text-rendering: geometricPrecision;
+}
+
+.rootContainer {
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+}
+
+.headerContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.title {
+  font-size: larger;
+}
+
+.titleUnderline {
+  margin-left: 23.6%;
+  margin-top: 1px;
+  height: 1px;
+  width: 161.8%;
+  background-color: lightgray;
+}
+
+.bodyContainer {
+  display: flex;
+  flex-direction: row;
+}
+
+.sectionContainer {
+  padding: 8px;
+}
