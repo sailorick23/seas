@@ -62,6 +62,22 @@ export const useOscillator = (
       setOscillatorStatus(OscillatorStatus.PLAYING)
     }
   }, [oscillatorStatus, periodicWaveform])
+  useEffect(() => {
+    if (
+      bufferSourceRef.current &&
+      oscillatorStatus === OscillatorStatus.PLAYING
+    ) {
+      setOscillatorStatus(OscillatorStatus.STOPPING)
+    } else if (
+      bufferSourceRef.current &&
+      oscillatorStatus === OscillatorStatus.PLAYING
+    ) {
+      const bufferSource = bufferSourceRef.current
+      bufferSource.stop()
+      bufferSource.disconnect()
+      setOscillatorStatus(OscillatorStatus.STARTING)
+    }
+  }, [periodicWaveform])
   const oscillatorIsStable =
     oscillatorStatus === OscillatorStatus.IDLE ||
     oscillatorStatus === OscillatorStatus.PLAYING
