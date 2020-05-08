@@ -9,3 +9,9 @@ export default {
 export const Explorer = () => {
   return <PeriodicWaveformExplorer />
 }
+
+export const TypeShit = () => {
+  // type transform / derive
+  // <[{ key: 'foo' }]> => <{ foo: { key: 'foo' } }>
+  return null
+}

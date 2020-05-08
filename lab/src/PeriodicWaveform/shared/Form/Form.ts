@@ -16,8 +16,8 @@ export interface FormSchema {
 }
 
 export const makeFormSchema = <SomeFormSchema extends FormSchema>(
-  formSchema: SomeFormSchema
-): SomeFormSchema => formSchema
+  someFormSchema: SomeFormSchema
+): SomeFormSchema => someFormSchema
 
 export type FormSchemaFieldProperty<
   SomeFormSchema extends FormSchema,
@@ -72,6 +72,22 @@ export type FieldSchema = TextFieldSchema<number> | TextFieldSchema<string>
 
 export interface TextFieldSchema<TargetValue>
   extends BaseFieldSchema<'text', string, TargetValue> {}
+
+export const makeTextFieldSchema = <TargetValue>(
+  partialFieldSchema: Pick<
+    TextFieldSchema<TargetValue>,
+    'key' | 'valueSchema' | 'order'
+  >
+): TextFieldSchema<TargetValue> => ({
+  variant: 'text',
+  initialValue: '',
+  ...partialFieldSchema,
+  name: partialFieldSchema.key,
+  label: partialFieldSchema.key.replace(
+    /([A-Z])/g,
+    (matchedValue) => ` ${matchedValue.toLowerCase()}`
+  ),
+})
 
 export interface BaseFieldSchema<
   SomeFieldVariant extends FieldVariant,

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
-import * as yup from 'yup'
-import { makeFormSchema } from '../shared/Form'
+import * as Yup from 'yup'
+import { makeFormSchema, makeTextFieldSchema } from '../shared/Form'
 import { CompositeWaveform } from '../shared/Waveform'
 import { ActionPalette } from './ActionPalette'
 import styles from './PeriodicWaveformExplorer.module.css'
@@ -52,44 +52,53 @@ export const PeriodicWaveformExplorer = (
                 label: 'push waveform',
                 disabled: false,
                 onClick: () => {
+                  // can we get strict typing
+                  // where order is inferred and nextFormSchema is narrow as possible
+                  //
+                  // const nextFormSchema = makeFormSchema(
+                  //   makeTextFieldSchema<number>({
+                  //     key: 'magnitudeX',
+                  //     valueSchema: Yup.number()
+                  //       .typeError('must be a number')
+                  //       .positive('must be greater than 0'),
+                  //   }),
+                  //   makeTextFieldSchema<number>({
+                  //     key: 'magnitudeY',
+                  //     valueSchema: Yup.number()
+                  //       .typeError('must be a number')
+                  //       .positive('must be greater than 0'),
+                  //   }),
+                  //   makeTextFieldSchema<number>({
+                  //     key: 'phase',
+                  //     valueSchema: Yup.number()
+                  //       .typeError('must be a number')
+                  //       .min(0, 'must be greater than or equal to 0')
+                  //       .lessThan(1, 'must be less than 1'),
+                  //   })
+                  // )
                   const nextFormSchema = makeFormSchema({
-                    magnitudeX: {
+                    magnitudeX: makeTextFieldSchema<number>({
                       key: 'magnitudeX',
-                      variant: 'text',
-                      initialValue: '',
-                      valueSchema: yup
-                        .number()
+                      valueSchema: Yup.number()
                         .typeError('must be a number')
                         .positive('must be greater than 0'),
-                      name: 'magnitudeX',
-                      label: 'magnitude x',
                       order: 0,
-                    },
-                    magnitudeY: {
+                    }),
+                    magnitudeY: makeTextFieldSchema<number>({
                       key: 'magnitudeY',
-                      variant: 'text',
-                      initialValue: '',
-                      valueSchema: yup
-                        .number()
+                      valueSchema: Yup.number()
                         .typeError('must be a number')
                         .positive('must be greater than 0'),
-                      name: 'magnitudeY',
-                      label: 'magnitude y',
                       order: 1,
-                    },
-                    phase: {
+                    }),
+                    phase: makeTextFieldSchema<number>({
                       key: 'phase',
-                      variant: 'text',
-                      initialValue: '',
-                      valueSchema: yup
-                        .number()
+                      valueSchema: Yup.number()
                         .typeError('must be a number')
                         .min(0, 'must be greater than or equal to 0')
                         .lessThan(1, 'must be less than 1'),
-                      name: 'phase',
-                      label: 'phase',
                       order: 2,
-                    },
+                    }),
                   })
                   const nextActiveTaskForm: TaskFormProps<typeof nextFormSchema> = {
                     label: 'push waveform',
