@@ -112,7 +112,7 @@ export const PeriodicWaveformExplorer = (
               },
               {
                 label: 'edit waveform',
-                disabled: false,
+                disabled: !periodicWaveform.length,
                 onClick: () => {
                   const nextFormSchema = makeFormSchema({
                     index: makeTextFieldSchema<number>({
@@ -121,8 +121,7 @@ export const PeriodicWaveformExplorer = (
                         .transform((value, originalValue) =>
                           originalValue ? value : undefined
                         )
-                        .required('required')
-                        .typeError('must be a integer')
+                        .typeError('must be an integer')
                         .integer('must be an integer')
                         .test(
                           'waveformExist',
@@ -130,6 +129,11 @@ export const PeriodicWaveformExplorer = (
                           (value) =>
                             value < periodicWaveformRef.current.length &&
                             value >= 0
+                        )
+                        .test(
+                          'required',
+                          'required',
+                          (value) => value !== undefined
                         ),
                       order: 0,
                     }),

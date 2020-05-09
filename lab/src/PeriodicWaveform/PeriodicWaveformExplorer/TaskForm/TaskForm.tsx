@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { ValidationError } from 'yup'
-import { FieldSchema, FormErrors, FormSchema, FormTargets } from '../../shared/Form'
+import { FormErrors, FormSchema, FormTargets } from '../../shared/Form'
 import { StupidButton } from '../../shared/StupidButton'
 import styles from './TaskForm.module.css'
 import { TextField } from './TextField'
