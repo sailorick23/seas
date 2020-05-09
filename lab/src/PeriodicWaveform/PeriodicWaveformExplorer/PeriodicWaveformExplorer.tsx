@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import * as Yup from 'yup'
 import { FormSchema, makeFormSchema, makeTextFieldSchema } from '../shared/Form'
-import { CompositeWaveform } from '../shared/Waveform'
+import { BasicWaveform, CompositeWaveform } from '../shared/Waveform'
 import { ActionPalette } from './ActionPalette'
 import styles from './PeriodicWaveformExplorer.module.css'
 import { TaskForm, TaskFormProps } from './TaskForm'
@@ -58,6 +58,10 @@ export const PeriodicWaveformExplorer = (
                     magnitudeX: makeTextFieldSchema<number>({
                       key: 'magnitudeX',
                       valueSchema: Yup.number()
+                        .transform((value, originalValue) =>
+                          originalValue ? value : undefined
+                        )
+                        .required('required')
                         .typeError('must be a number')
                         .positive('must be greater than 0'),
                       order: 0,
@@ -65,6 +69,10 @@ export const PeriodicWaveformExplorer = (
                     magnitudeY: makeTextFieldSchema<number>({
                       key: 'magnitudeY',
                       valueSchema: Yup.number()
+                        .transform((value, originalValue) =>
+                          originalValue ? value : undefined
+                        )
+                        .required('required')
                         .typeError('must be a number')
                         .positive('must be greater than 0'),
                       order: 1,
@@ -72,6 +80,10 @@ export const PeriodicWaveformExplorer = (
                     phase: makeTextFieldSchema<number>({
                       key: 'phase',
                       valueSchema: Yup.number()
+                        .transform((value, originalValue) =>
+                          originalValue ? value : undefined
+                        )
+                        .required('required')
                         .typeError('must be a number')
                         .min(0, 'must be greater than or equal to 0')
                         .lessThan(1, 'must be less than 1'),
@@ -91,6 +103,87 @@ export const PeriodicWaveformExplorer = (
                         ...periodicWaveformRef.current,
                       ]
                       nextPeriodicWaveform.push(validatedValues)
+                      setPeriodicWaveform(nextPeriodicWaveform)
+                      setActiveTaskForm(null)
+                    },
+                  })
+                  setActiveTaskForm(nextActiveTaskForm)
+                },
+              },
+              {
+                label: 'edit waveform',
+                disabled: false,
+                onClick: () => {
+                  const nextFormSchema = makeFormSchema({
+                    index: makeTextFieldSchema<number>({
+                      key: 'index',
+                      valueSchema: Yup.number()
+                        .transform((value, originalValue) =>
+                          originalValue ? value : undefined
+                        )
+                        .required('required')
+                        .typeError('must be a integer')
+                        .integer('must be an integer')
+                        .test(
+                          'waveformExist',
+                          'index must exist',
+                          (value) =>
+                            value < periodicWaveformRef.current.length &&
+                            value >= 0
+                        ),
+                      order: 0,
+                    }),
+                    magnitudeX: makeTextFieldSchema<number | undefined>({
+                      key: 'magnitudeX',
+                      valueSchema: Yup.number()
+                        .transform((value, originalValue) =>
+                          originalValue ? value : undefined
+                        )
+                        .notRequired()
+                        .typeError('must be a number')
+                        .positive('must be greater than 0'),
+                      order: 1,
+                    }),
+                    magnitudeY: makeTextFieldSchema<number | undefined>({
+                      key: 'magnitudeY',
+                      valueSchema: Yup.number()
+                        .transform((value, originalValue) =>
+                          originalValue ? value : undefined
+                        )
+                        .notRequired()
+                        .typeError('must be a number')
+                        .positive('must be greater than 0'),
+                      order: 2,
+                    }),
+                    phase: makeTextFieldSchema<number | undefined>({
+                      key: 'phase',
+                      valueSchema: Yup.number()
+                        .transform((value, originalValue) =>
+                          originalValue ? value : undefined
+                        )
+                        .typeError('must be a number')
+                        .min(0, 'must be greater than or equal to 0')
+                        .lessThan(1, 'must be less than 1'),
+                      order: 3,
+                    }),
+                  })
+                  const nextActiveTaskForm = makeTaskForm<
+                    typeof nextFormSchema
+                  >({
+                    label: 'edit waveform',
+                    formSchema: nextFormSchema,
+                    onCancel: () => {
+                      setActiveTaskForm(null)
+                    },
+                    onSubmit: (validatedValues) => {
+                      const { index, ...newWaveformValues } = validatedValues
+                      const nextPeriodicWaveform = [
+                        ...periodicWaveformRef.current,
+                      ]
+                      nextPeriodicWaveform[index] = {
+                        ...periodicWaveformRef.current[index],
+                        ...(newWaveformValues as Partial<BasicWaveform>),
+                      }
                       setPeriodicWaveform(nextPeriodicWaveform)
                       setActiveTaskForm(null)
                     },

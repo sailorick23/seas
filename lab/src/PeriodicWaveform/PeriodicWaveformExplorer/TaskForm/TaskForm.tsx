@@ -20,7 +20,7 @@ export const TaskForm = <SomeFormSchema extends FormSchema>(
   const form = useForm(formSchema)
   const sortedFieldSchemas = useMemo(
     () =>
-      Object.values<FieldSchema>(form.schema).sort(
+      Object.values<FormSchema[string]>(form.schema).sort(
         (fieldSchemaA, fieldSchemaB) => fieldSchemaA.order - fieldSchemaB.order
       ),
     [form.schema]

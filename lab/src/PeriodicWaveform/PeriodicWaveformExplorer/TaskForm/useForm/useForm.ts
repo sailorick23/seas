@@ -39,8 +39,8 @@ export const useForm = <SomeFormSchema extends FormSchema>(
 
 const makeInitialValues = <SomeFormSchema extends FormSchema>(
   formSchema: SomeFormSchema
-): FormValues<SomeFormSchema> => {
-  return Object.values(formSchema).reduce<Partial<FormValues<SomeFormSchema>>>(
+): FormValues<SomeFormSchema> =>
+  Object.values(formSchema).reduce<Partial<FormValues<SomeFormSchema>>>(
     (initialValuesResult, fieldSchema) => {
       const fieldKey: keyof SomeFormSchema = fieldSchema.key
       initialValuesResult[fieldKey] = fieldSchema.initialValue
@@ -48,18 +48,17 @@ const makeInitialValues = <SomeFormSchema extends FormSchema>(
     },
     {}
   ) as FormValues<SomeFormSchema>
-}
 
 const makeValueSchemas = <SomeFormSchema extends FormSchema>(
   formSchema: SomeFormSchema
-): Yup.ObjectSchemaDefinition<FormTargets<SomeFormSchema>> => {
-  return (Object.values(formSchema).reduce<
-    Partial<FormValueSchemas<SomeFormSchema>>
-  >((valueSchemasResult, fieldSchema) => {
-    const fieldKey: keyof SomeFormSchema = fieldSchema.key
-    valueSchemasResult[fieldKey] = fieldSchema.valueSchema
-    return valueSchemasResult
-  }, {}) as FormValueSchemas<SomeFormSchema>) as Yup.ObjectSchemaDefinition<
+): Yup.ObjectSchemaDefinition<FormTargets<SomeFormSchema>> =>
+  (Object.values(formSchema).reduce<Partial<FormValueSchemas<SomeFormSchema>>>(
+    (valueSchemasResult, fieldSchema) => {
+      const fieldKey: keyof SomeFormSchema = fieldSchema.key
+      valueSchemasResult[fieldKey] = fieldSchema.valueSchema
+      return valueSchemasResult
+    },
+    {}
+  ) as FormValueSchemas<SomeFormSchema>) as Yup.ObjectSchemaDefinition<
     FormTargets<SomeFormSchema>
   >
-}
