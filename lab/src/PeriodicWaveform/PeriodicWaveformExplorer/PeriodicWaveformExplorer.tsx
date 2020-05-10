@@ -39,17 +39,7 @@ export const PeriodicWaveformExplorer = (
         <div className={styles.sectionContainer}>
           <ActionPalette
             actions={[
-              {
-                label:
-                  oscillator.status === OscillatorStatus.PLAYING ||
-                  oscillator.status === OscillatorStatus.STOPPING
-                    ? 'stop audio'
-                    : 'play audio',
-                disabled: !oscillator.isStable || !periodicWaveform.length,
-                onClick: () => {
-                  oscillator.toggle()
-                },
-              },
+              ////
               {
                 label: 'push waveform',
                 disabled: false,
@@ -202,6 +192,26 @@ export const PeriodicWaveformExplorer = (
                   const nextPeriodicWaveform = [...periodicWaveformRef.current]
                   nextPeriodicWaveform.pop()
                   setPeriodicWaveform(nextPeriodicWaveform)
+                },
+              },
+              {
+                label: 'reset waveform',
+                disabled: !periodicWaveform.length,
+                onClick: () => {
+                  const nextPeriodicWaveform: CompositeWaveform = []
+                  setPeriodicWaveform(nextPeriodicWaveform)
+                },
+              },
+              ////
+              {
+                label:
+                  oscillator.status === OscillatorStatus.PLAYING ||
+                  oscillator.status === OscillatorStatus.STOPPING
+                    ? 'stop audio'
+                    : 'play audio',
+                disabled: !oscillator.isStable || !periodicWaveform.length,
+                onClick: () => {
+                  oscillator.toggle()
                 },
               },
             ]}
