@@ -19,7 +19,7 @@ export const TextField = (props: TextFieldProps) => {
     <div className={styles.rootContainer}>
       <div className={styles.label}>{label}</div>
       <div className={styles.inputContainer}>
-        <input {...inputProps} />
+        <input autoComplete={'off'} {...inputProps} />
       </div>
       <div className={styles.errorMessage}>{errorMessage}</div>
     </div>

@@ -4,5 +4,4 @@ export interface BasicWaveform {
   phase: number
 }
 
-export interface CompositeWaveform<T extends BasicWaveform = BasicWaveform>
-  extends Array<T> {}
+export interface CompositeWaveform extends Array<BasicWaveform> {}

@@ -18,11 +18,13 @@ export const TaskForm = <SomeFormSchema extends FormSchema>(
 ) => {
   const { formSchema, label, onCancel, onSubmit } = props
   const form = useForm(formSchema)
-  const sortedFieldSchemas = useMemo(
-    () =>
-      Object.values<FormSchema[string]>(form.schema).sort(
+  const { sortedFieldSchemas, fieldKeySalt } = useMemo(
+    () => ({
+      sortedFieldSchemas: Object.values<FormSchema[string]>(form.schema).sort(
         (fieldSchemaA, fieldSchemaB) => fieldSchemaA.order - fieldSchemaB.order
       ),
+      fieldKeySalt: `${Math.random()}`,
+    }),
     [form.schema]
   )
   const fields = useMemo(
@@ -35,7 +37,7 @@ export const TaskForm = <SomeFormSchema extends FormSchema>(
           ...textFieldProps
         } = fieldSchema
         return (
-          <div key={key} className={styles.fieldContainer}>
+          <div key={`${key}_${fieldKeySalt}`} className={styles.fieldContainer}>
             <TextField
               {...textFieldProps}
               value={form.values[fieldSchema.key]}
@@ -51,7 +53,7 @@ export const TaskForm = <SomeFormSchema extends FormSchema>(
           </div>
         )
       }),
-    [form, sortedFieldSchemas]
+    [form, sortedFieldSchemas, fieldKeySalt]
   )
   return (
     <div className={styles.rootContainer}>
@@ -88,3 +90,15 @@ export const TaskForm = <SomeFormSchema extends FormSchema>(
     </div>
   )
 }
+
+export const makeTaskForm = <
+  SomeFormSchema extends FormSchema,
+  SomeTaskFormProps extends TaskFormProps<SomeFormSchema> = TaskFormProps<
+    SomeFormSchema
+  >
+>(
+  someTaskFormProps: SomeTaskFormProps
+): SomeTaskFormProps => ({
+  ...someTaskFormProps,
+  formSchema: { ...someTaskFormProps.formSchema },
+})
