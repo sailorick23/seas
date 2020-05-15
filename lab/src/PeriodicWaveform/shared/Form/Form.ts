@@ -12,7 +12,7 @@ export interface Form<SomeFormSchema extends FormSchema> {
 }
 
 export interface FormSchema {
-  [key: string]: FieldSchema
+  [key: string]: FieldSchema<any>
 }
 
 export const makeFormSchema = <SomeFormSchema extends FormSchema>(
@@ -21,7 +21,7 @@ export const makeFormSchema = <SomeFormSchema extends FormSchema>(
 
 export type FormSchemaFieldProperty<
   SomeFormSchema extends FormSchema,
-  SomeFieldSchemaKey extends keyof FieldSchema
+  SomeFieldSchemaKey extends keyof FieldSchema<any>
 > = {
   [FieldKey in keyof SomeFormSchema]: FieldSchemaProperty<
     SomeFormSchema,
@@ -68,7 +68,7 @@ export type FormValueSetter<
   }
 > = (props: FieldSetterProps[keyof FieldSetterProps]) => void
 
-export type FieldSchema = TextFieldSchema<number> | TextFieldSchema<string>
+export type FieldSchema<TargetValue> = TextFieldSchema<TargetValue>
 
 export interface TextFieldSchema<TargetValue>
   extends BaseFieldSchema<'text', string, TargetValue> {}
