@@ -3,7 +3,6 @@ import { PeriodicWaveformExplorer } from './PeriodicWaveformExplorer'
 
 export default {
   title: 'PeriodicWaveform',
-  component: () => null,
 }
 
 export const Explorer = () => {
